@@ -76,7 +76,7 @@ casas-routing-challenge/
 ├── report_template.md        # Template for your report
 ├── model_card_template.md    # Template for ML model documentation
 ├── data/
-│   └── constellation.yaml    # Constellation parameters (DO NOT MODIFY)
+│   └── constellation.yaml    # Constellation parameters 
 ├── sim/                      # Core simulation components
 │   ├── orbit.py              # Orbit propagation
 │   ├── visibility.py         # Line-of-sight computation
@@ -105,7 +105,7 @@ casas-routing-challenge/
 
 Implement your adaptive routing strategy in `routing/adaptive.py`. The file contains a stub with the expected interface.
 
-**Important Note**: Currently, `adaptive.py` uses a fallback to baseline shortest-path routing, so initial results will be identical to baseline. You must implement your adaptive strategy to see performance differences.
+**Important Note**: Currently, `adaptive.py` uses a **random fallback** (randomly picks a neighbor) for testing purposes. This performs poorly compared to baseline shortest-path routing. You must implement your adaptive strategy to improve performance and beat the baseline.
 
 **Router Interface:**
 ```python
@@ -247,8 +247,19 @@ We evaluate:
 3. **Space/orbital reasoning**: Handling contact-driven topology dynamics
 4. **Engineering judgment**: Appropriate use of heuristics vs. ML, simplicity vs. overengineering
 
+## Current Implementation Status
+
+- **Baseline Router** (`routing/baseline.py`): Fully implemented using Dijkstra shortest-path algorithm
+- **Adaptive Router** (`routing/adaptive.py`): Currently uses a random fallback (poor performance). **You must implement your adaptive routing strategy here.**
+
+When you run the simulations initially, you'll see:
+- Baseline: Good performance (shortest path routing)
+- Adaptive: Poor performance (random routing) - this is expected until you implement your strategy
+
+Your goal is to implement an adaptive routing strategy that performs as well as or better than baseline.
+
 ## Questions?
 
-Review the codebase to understand the simulation model. The baseline router provides a reference implementation.
+Review the codebase to understand the simulation model. The baseline router (`routing/baseline.py`) provides a reference implementation showing how to use NetworkX for shortest-path routing.
 
 Good luck!
