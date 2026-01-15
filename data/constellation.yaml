@@ -1,0 +1,17 @@
+# Constellation Parameters
+# Default configuration: 4 planes × 4 satellites = 16 satellites
+# REQUIRED: Test with larger configurations (6×6, 8×8, etc.) for scaling analysis
+# Keep altitude, inclination, and spacing parameters the same for fair comparison
+
+constellation:
+  number_of_planes: 4
+  sats_per_plane: 4
+  altitude_km: 550
+  inclination_deg: 53
+  raan_spacing_deg: 60
+  mean_anomaly_spacing_deg: 32.7
+
+ground_station:
+  lat_deg: 0.0
+  lon_deg: 0.0
+  alt_m: 100
