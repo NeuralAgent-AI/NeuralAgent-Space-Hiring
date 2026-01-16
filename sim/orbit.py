@@ -47,8 +47,37 @@ class OrbitPropagator:
         # Here we use a simplified model with mean motion
         
         altitude_km = self.constellation['altitude_km']
-        inclination_deg = self.constellation['inclination_deg']
-        raan_spacing = self.constellation['raan_spacing_deg']
+        base_inclination_deg = self.constellation['inclination_deg']
+        num_planes = self.constellation['number_of_planes']
+        
+        # Calculate RAAN spacing automatically for even global coverage
+        # If raan_spacing_deg is provided, use it; otherwise calculate as 360/num_planes
+        if 'raan_spacing_deg' in self.constellation:
+            raan_spacing = self.constellation['raan_spacing_deg']
+        else:
+            # Automatically calculate for even distribution around the globe
+            raan_spacing = 360.0 / num_planes
+        
+        # Calculate different inclinations for each plane with equal spacing
+        # Spread inclinations evenly to make them visually distinct
+        # Use a range from 30° to 80° with equal spacing between planes
+        if num_planes == 1:
+            inclinations_deg = [base_inclination_deg]
+        else:
+            # Equal spacing: for N planes, distribute from min_inc to max_inc
+            min_inclination = 30.0  # Minimum inclination (degrees)
+            max_inclination = 80.0  # Maximum inclination (degrees)
+            inclination_range = max_inclination - min_inclination
+            
+            inclinations_deg = []
+            for plane in range(num_planes):
+                if num_planes == 1:
+                    inc = base_inclination_deg
+                else:
+                    # Equal spacing: plane 0 gets min, plane N-1 gets max
+                    inc = min_inclination + (inclination_range * plane / (num_planes - 1))
+                inclinations_deg.append(inc)
+        
         mean_anomaly_spacing = self.constellation['mean_anomaly_spacing_deg']
         
         # Earth radius in km
@@ -59,8 +88,9 @@ class OrbitPropagator:
         # Store orbital parameters for each satellite
         self.orbital_params = []
         
-        for plane in range(self.constellation['number_of_planes']):
+        for plane in range(num_planes):
             raan = plane * raan_spacing
+            plane_inclination_deg = inclinations_deg[plane]
             for sat in range(self.constellation['sats_per_plane']):
                 mean_anomaly = sat * mean_anomaly_spacing
                 
@@ -68,11 +98,14 @@ class OrbitPropagator:
                     'plane': plane,
                     'sat': sat,
                     'a': a,  # km
-                    'inclination': np.radians(inclination_deg),
+                    'inclination': np.radians(plane_inclination_deg),
                     'raan': np.radians(raan),
                     'mean_anomaly': np.radians(mean_anomaly),
                 }
                 self.orbital_params.append(params)
+        
+        # Store plane inclinations for visualization
+        self.plane_inclinations = inclinations_deg
         
         return satellites
     

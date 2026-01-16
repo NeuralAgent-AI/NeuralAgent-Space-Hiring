@@ -1,17 +1,131 @@
-# Constellation Parameters
-# Default configuration: 4 planes × 4 satellites = 16 satellites
-# REQUIRED: Test with larger configurations (6×6, 8×8, etc.) for scaling analysis
-# Keep altitude, inclination, and spacing parameters the same for fair comparison
+# ============================================================================
+# SATELLITE CONSTELLATION CONFIGURATION
+# ============================================================================
+# This file defines the satellite constellation and ground station parameters.
+# Modify these values to test different constellation sizes and configurations.
+#
+# IMPORTANT: For scaling analysis, keep altitude and inclination the same
+#            across different sizes to ensure fair comparison.
+# ============================================================================
 
 constellation:
-  number_of_planes: 4
-  sats_per_plane: 4
+  # --------------------------------------------------------------------------
+  # ORBITAL PARAMETERS
+  # --------------------------------------------------------------------------
+  
+  # Altitude above Earth's surface (in kilometers)
+  # Typical LEO altitudes: 400-2000 km
+  # Current: 550 km (similar to Starlink)
   altitude_km: 550
+  
+  # Base inclination angle (in degrees)
+  # This is the base value; actual inclinations are automatically distributed
+  # evenly between 30° and 80° across all planes for visual distinction.
+  # Typical values: 53° (ISS), 90° (polar), 0° (equatorial)
+  # Note: Each plane gets a different inclination automatically calculated
   inclination_deg: 53
-  raan_spacing_deg: 60
+  
+  # Angular spacing between satellites within the same plane (in degrees)
+  # Automatically calculated as: 360° / sats_per_plane
+  # This ensures even distribution of satellites around each orbital plane
   mean_anomaly_spacing_deg: 32.7
+  
+  # --------------------------------------------------------------------------
+  # CONSTELLATION STRUCTURE
+  # --------------------------------------------------------------------------
+  
+  # Number of orbital planes
+  # Each plane is rotated around Earth's axis by: 360° / number_of_planes
+  # Example: 4 planes = 90° spacing, 6 planes = 60° spacing
+  # For scaling analysis, test: 4, 6, 8, 10 planes
+  number_of_planes: 4
+  
+  # Number of satellites per orbital plane
+  # Total satellites = number_of_planes × sats_per_plane
+  # For scaling analysis, test: 4, 6, 8, 10 satellites per plane
+  # Example: 4 planes × 4 sats = 16 satellites total
+  sats_per_plane: 4
+  
+  # --------------------------------------------------------------------------
+  # ADVANCED PARAMETERS (Optional - usually auto-calculated)
+  # --------------------------------------------------------------------------
+  
+  # Right Ascension of Ascending Node (RAAN) spacing (in degrees)
+  # If not specified, automatically calculated as: 360° / number_of_planes
+  # This controls how orbital planes are distributed around Earth
+  # raan_spacing_deg: 90.0  # Uncomment to override auto-calculation
+
+# ============================================================================
+# GROUND STATION CONFIGURATION
+# ============================================================================
+# The ground station is the source of all traffic in the simulation.
+# Packets are sent from the ground station to a destination satellite.
+# ----------------------------------------------------------------------------
 
 ground_station:
-  lat_deg: 0.0
-  lon_deg: 0.0
+  # Ground station altitude above sea level (in meters)
+  # Typical values: 0-5000 m
   alt_m: 100
+  
+  # Ground station latitude (in degrees)
+  # Range: -90 (South Pole) to +90 (North Pole)
+  # 0° = Equator
+  # Current: 0.0° (Equator, near Gulf of Guinea, Africa)
+  lat_deg: 0.0
+  
+  # Ground station longitude (in degrees)
+  # Range: -180 (West) to +180 (East)
+  # 0° = Prime Meridian (Greenwich, UK)
+  # Current: 0.0° (Prime Meridian, near Gulf of Guinea, Africa)
+  lon_deg: 0.0
+
+# ============================================================================
+# CONFIGURATION EXAMPLES FOR SCALING ANALYSIS
+# ============================================================================
+#
+# Small constellation (default):
+#   number_of_planes: 4
+#   sats_per_plane: 4
+#   Total: 16 satellites
+#
+# Medium constellation:
+#   number_of_planes: 6
+#   sats_per_plane: 6
+#   Total: 36 satellites
+#
+# Large constellation:
+#   number_of_planes: 8
+#   sats_per_plane: 8
+#   Total: 64 satellites
+#
+# Extra large constellation:
+#   number_of_planes: 10
+#   sats_per_plane: 10
+#   Total: 100 satellites
+#
+# ============================================================================
+# NOTES FOR STUDENTS
+# ============================================================================
+#
+# 1. DESTINATION SELECTION:
+#    The destination satellite is automatically selected as a random but
+#    consistent choice for each constellation size. This ensures:
+#    - Same size = same destination (reproducible results)
+#    - Different sizes = different destinations (variety in testing)
+#
+# 2. SCALING ANALYSIS:
+#    When testing different sizes, keep these parameters constant:
+#    - altitude_km: 550
+#    - inclination_deg: 53 (base value, actual inclinations vary by plane)
+#    - ground_station location
+#
+# 3. ORBITAL MECHANICS:
+#    - RAAN spacing is automatically calculated for even distribution
+#    - Inclinations are automatically distributed from 30° to 80°
+#    - Mean anomaly spacing ensures even satellite distribution per plane
+#
+# 4. VISUALIZATION:
+#    Use: python plots/visualize_topology.py --mode single
+#    This shows the constellation, routing paths, and network topology.
+#
+# ============================================================================

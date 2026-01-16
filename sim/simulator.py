@@ -1,5 +1,8 @@
 """Main simulation loop for satellite network routing."""
 
+import random
+import hashlib
+
 from sim.orbit import OrbitPropagator
 from sim.visibility import VisibilityChecker
 from sim.topology import TopologyBuilder
@@ -45,12 +48,29 @@ class Simulator:
             dst=traffic_config.get('dst')
         )
         
-        # Set destination to first satellite if not specified
+        # Set destination to a random satellite, but consistently for the same constellation
+        # This ensures the same random satellite is selected across all experiments
+        # for the same constellation size, making results reproducible
         if self.traffic_gen.dst is None:
+            num_planes = self.orbit_prop.constellation['number_of_planes']
+            sats_per_plane = self.orbit_prop.constellation['sats_per_plane']
+            
+            # Get all satellite node IDs
             node_ids = self.orbit_prop.get_node_ids()
             satellites = [n for n in node_ids if n.startswith('sat_')]
+            
             if satellites:
-                self.traffic_gen.set_destination(satellites[0])
+                # Use a deterministic seed based on constellation parameters
+                # This ensures the same "random" satellite is selected for the same constellation
+                seed_string = f"{num_planes}x{sats_per_plane}"
+                seed = int(hashlib.md5(seed_string.encode()).hexdigest()[:8], 16)
+                
+                # Set random seed and select a satellite
+                random.seed(seed)
+                default_dst = random.choice(satellites)
+                random.seed()  # Reset to system random
+                
+                self.traffic_gen.set_destination(default_dst)
         
         # Simulation parameters
         self.dt = 1.0  # Timestep (seconds)

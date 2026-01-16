@@ -50,13 +50,25 @@ Each run generates a results file in `outputs/`:
 
 ### Visualization
 
-Generate comparison plots from all results:
+**Results Comparison**: Generate comparison plots from all results:
 
 ```bash
 python plots/plot_results.py
 ```
 
-Plots are saved to `outputs/plots/`.
+**Topology Visualization**: Visualize the constellation and routing paths:
+
+```bash
+python plots/visualize_topology.py
+```
+
+This generates a sample visualization showing:
+- 3D view of satellite constellation
+- Network topology (all links)
+- Example routing path from ground station to destination (multi-hop path)
+- Network statistics
+
+The sample visualization shows a multi-hop routing path (at least 3 hops) to demonstrate how packets traverse the network. Plots are saved to `outputs/plots/`.
 
 ## Testing
 
@@ -76,7 +88,8 @@ casas-routing-challenge/
 ├── report_template.md        # Template for your report
 ├── model_card_template.md    # Template for ML model documentation
 ├── data/
-│   └── constellation.yaml    # Constellation parameters 
+│   ├── constellation.yaml    # Constellation parameters (see data/README.md for details)
+│   └── README.md              # Configuration guide for students 
 ├── sim/                      # Core simulation components
 │   ├── orbit.py              # Orbit propagation
 │   ├── visibility.py         # Line-of-sight computation
@@ -176,7 +189,7 @@ The default configuration starts with **4 planes × 4 satellites = 16 satellites
    ```
 
 2. **Test with progressively larger constellations**:
-   Modify `data/constellation.yaml` and test at least 3 different sizes:
+   Modify `data/constellation.yaml` (see `data/README.md` for detailed configuration guide) and test at least 3 different sizes:
    - **Small**: 4 planes × 4 sats = 16 satellites (default)
    - **Medium**: 6 planes × 6 sats = 36 satellites
    - **Large**: 8 planes × 8 sats = 64 satellites
@@ -201,6 +214,34 @@ The default configuration starts with **4 planes × 4 satellites = 16 satellites
 
 5. **Include findings in report**: Document results in the "Constellation Scaling Analysis" section of your report.
 
+### Topology Visualization (Optional but Recommended)
+
+**Create a visualization showing routing paths from ground station to satellite.**
+
+The default destination is automatically set to a **random satellite** that is consistently selected for the same constellation size. This ensures:
+- The same random satellite is used across all experiments for the same constellation size (reproducible)
+- Different constellation sizes get different random destinations
+- Multi-hop routing is still likely since the destination is randomly distributed across all planes
+
+The random selection is deterministic (based on a hash of the constellation size), so results are reproducible while still testing routing to various satellite locations.
+
+You can use `plots/visualize_topology.py` as a reference. Modify it or create your own visualization that shows:
+
+1. **Constellation layout**: All satellites and ground station positions
+2. **Network topology**: Active links between nodes
+3. **Routing paths**: Show how packets are routed from source to destination
+   - Use different colors/styles for baseline vs. adaptive routing
+   - Show multiple paths if your adaptive router explores alternatives
+   - Highlight path differences between routers
+
+**Ideas for visualization**:
+- 3D plot of satellite positions with routing paths
+- Network graph showing topology and paths
+- Time-lapse showing how paths change as topology evolves
+- Comparison of baseline vs. adaptive routing paths
+
+Include your visualization in your report or as a separate file.
+
 ## How It Works
 
 ### Simulation Model
@@ -210,16 +251,37 @@ The default configuration starts with **4 planes × 4 satellites = 16 satellites
 - **Topology**: Rebuilt every timestep from current satellite positions
 - **Packet Loss**: Occurs due to TTL expiration or no available path (not randomness)
 
+### Routing Model
+
+**Global Topology Awareness**: The routing model uses **global/omniscient routing** - each router has access to the **complete network topology** when making routing decisions.
+
+- When `get_next_hop()` is called, the router receives:
+  - **`topology`**: Complete NetworkX graph with all nodes and active links
+  - **`history`**: Recent topology states (last 10 timesteps)
+  - **`time`**: Current simulation time
+
+- This means routers can see:
+  - All nodes in the network (all satellites + ground station)
+  - All active links between any nodes
+  - Link distances (edge weights)
+  - Historical topology changes
+
+- **Note**: This is a simplified model for the assignment. In real distributed systems, nodes typically only know about their neighbors. Here, the global view allows you to focus on routing algorithms rather than distributed routing protocols.
+
 ### Packet Structure
 
-Each packet has:
-- `id`: Unique identifier
-- `src`, `dst`: Source and destination nodes
-- `created_at`: Creation timestamp
-- `current_node`: Current location
-- `ttl_remaining`: Time to live remaining (seconds)
-- `delivered_at`: Delivery timestamp (if delivered)
-- `drop_reason`: Reason for drop (if dropped)
+Each packet is a **single object** that travels through the network - the same packet object moves from sender to receiver, with its state updated in place.
+
+Packet attributes:
+- `id`: Unique identifier (never changes)
+- `src`, `dst`: Source and destination nodes (never change)
+- `created_at`: Creation timestamp (never changes)
+- `current_node`: Current location (updated as packet moves)
+- `ttl_remaining`: Time to live remaining (decremented each timestep)
+- `delivered_at`: Delivery timestamp (set when delivered)
+- `drop_reason`: Reason for drop (set if dropped)
+
+**Important**: The router receives the **same packet object** at each hop. The packet's `current_node` is updated when it moves (`packet.move_to(next_node)`), but it's the same object throughout its journey.
 
 ### Metrics
 
