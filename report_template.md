@@ -1,4 +1,7 @@
 # Routing Strategy Report
+<!---
+Keep your answers short, bullet points ok!
+-->
 
 **Candidate Name:** [Your Name]
 

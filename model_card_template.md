@@ -1,4 +1,7 @@
 # Model Card: [Model Name]
+<!---
+Keep your answers short, bullet points ok!
+-->
 
 **Router:** AdaptiveRouter  
 **Model Type:** [e.g., Random Forest, Neural Network, etc.]  
