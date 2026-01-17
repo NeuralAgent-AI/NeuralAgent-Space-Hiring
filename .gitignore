@@ -36,6 +36,8 @@ outputs/*.json
 outputs/plots/*.png
 !outputs/.gitkeep
 !outputs/plots/.gitkeep
+# Exception: Reference image for README documentation
+!outputs/plots/constellation_architecture_10x10.png
 
 # Testing
 .pytest_cache/

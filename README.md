@@ -14,6 +14,77 @@ This project provides a working satellite network simulator where you implement 
 - **Baseline Routing**: Shortest-path routing provided as a baseline
 - **Two Scenarios**: Stable (nominal conditions) and Disrupted (reduced connectivity)
 
+## Understanding the Satellite Constellation Architecture
+
+### Constellation Structure
+
+The simulator uses a **Walker constellation** pattern, similar to real-world satellite networks like Starlink. Here's how it works:
+
+#### Orbital Planes and Satellites
+
+- **Orbital Planes**: Satellites are organized into multiple orbital planes that circle the Earth
+- **Satellites per Plane**: Each plane contains multiple satellites evenly spaced around the orbit
+- **Total Satellites**: `number_of_planes × sats_per_plane`
+
+For example:
+- **4×4 constellation**: 4 planes × 4 satellites = 16 satellites
+- **10×10 constellation**: 10 planes × 10 satellites = 100 satellites
+
+#### Orbital Parameters
+
+Each orbital plane has unique characteristics:
+
+1. **RAAN (Right Ascension of Ascending Node)**: Controls the rotation of the orbital plane around Earth's axis
+   - Planes are evenly spaced: `RAAN = 360° / number_of_planes`
+   - Example: 10 planes = 36° spacing between planes
+
+2. **Inclination**: The tilt angle of the orbital plane relative to the equator
+   - In this simulator, inclinations are automatically distributed from 30° to 80° across planes
+   - This creates visually distinct orbital paths and better global coverage
+
+3. **Mean Anomaly**: The position of each satellite within its orbital plane
+   - Satellites are evenly spaced: `spacing = 360° / sats_per_plane`
+   - Example: 10 satellites per plane = 36° spacing between satellites
+
+#### Visual Example: 10×10 Constellation
+
+The following visualization shows a **10×10 constellation (100 satellites)** on a world map, demonstrating:
+
+![10x10 Constellation Architecture](outputs/plots/constellation_architecture_10x10.png)
+
+**Key Elements in the Visualization:**
+
+1. **Satellites (Purple Circles)**: Each satellite is labeled as `Sat_X_Y` where:
+   - `X` = Orbital plane number (0-9 for 10 planes)
+   - `Y` = Satellite number within that plane (0-9 for 10 satellites per plane)
+
+2. **Ground Station (Yellow Triangle)**: The source of all traffic, located at the equator (0° latitude, 0° longitude)
+
+3. **Routing Path (Red Line)**: Shows how packets travel from ground station to destination satellite through multiple hops
+
+4. **World Map**: Provides geographical context showing where satellites are positioned relative to Earth's surface
+
+#### How Links Are Formed
+
+**Inter-Satellite Links (ISL)** are created when:
+- Two satellites are within the **maximum ISL range** (5000 km in stable, 3000 km in disrupted)
+- They have **line-of-sight** (not blocked by Earth)
+
+**Ground Links** are created when:
+- A satellite is within range of the ground station
+- The satellite has sufficient **elevation angle** above the horizon (5° in stable, 15° in disrupted)
+
+#### Why This Matters for Routing
+
+- **Dynamic Topology**: As satellites orbit, links appear and disappear
+- **Multi-hop Routing**: Packets often need multiple hops to reach distant satellites
+- **Path Selection**: Your routing algorithm must choose paths that:
+  - Minimize distance (like baseline)
+  - Account for topology changes (adaptive routing)
+  - Handle disrupted scenarios with reduced connectivity
+
+The constellation architecture directly impacts routing performance - larger constellations (10×10) provide more connectivity options, especially in disrupted scenarios, while smaller constellations (4×4) may have network partitions under stress.
+
 ## Setup
 
 ### Requirements
