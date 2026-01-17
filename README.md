@@ -58,11 +58,17 @@ The following visualization shows a **10×10 constellation (100 satellites)** on
    - `X` = Orbital plane number (0-9 for 10 planes)
    - `Y` = Satellite number within that plane (0-9 for 10 satellites per plane)
 
-2. **Ground Station (Yellow Triangle)**: The source of all traffic, located at the equator (0° latitude, 0° longitude)
+2. **Orbital Paths (Colored Lines)**: Each colored line shows the **ground track** (orbital path projected onto Earth) for one satellite from each plane over ~90 minutes. These lines demonstrate:
+   - How satellites move in their orbits
+   - The sinusoidal pattern of ground tracks
+   - Different orbital inclinations create different track patterns
+   - Each plane has a distinct color to show orbital plane separation
 
-3. **Routing Path (Red Line)**: Shows how packets travel from ground station to destination satellite through multiple hops
+3. **Ground Station (Yellow Triangle)**: The source of all traffic, located at the equator (0° latitude, 0° longitude)
 
-4. **World Map**: Provides geographical context showing where satellites are positioned relative to Earth's surface
+4. **Routing Path (Red Line)**: Shows how packets travel from ground station to destination satellite through multiple hops
+
+5. **World Map**: Provides geographical context showing where satellites are positioned relative to Earth's surface
 
 #### How Links Are Formed
 

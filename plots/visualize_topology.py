@@ -531,8 +531,56 @@ def plot_sinusoidal_2d_routing(positions, topology, orbit_prop, packet_path=None
     sats_per_plane = orbit_prop.constellation['sats_per_plane'] if orbit_prop else 0
     total_sats = num_planes * sats_per_plane
     
-    # Ground tracks removed - they were confusing. Only showing current positions and routing path.
+    # Generate and plot orbital paths (ground tracks) for each satellite
+    # This helps students understand how satellites move in their orbits
     plane_colors = ['magenta', 'purple', 'violet', 'fuchsia', 'mediumorchid', 'darkviolet', 'blueviolet', 'indigo']
+    
+    # Generate ground tracks for satellites to show their orbital paths
+    # Show one satellite per plane to demonstrate orbital patterns without clutter
+    duration_minutes = 90  # Show ~1.5 orbits (LEO period ~90-100 minutes)
+    num_points = 200
+    time_points = np.linspace(0, duration_minutes * 60, num_points)
+    
+    # Get one satellite per plane for track visualization
+    node_ids = orbit_prop.get_node_ids() if orbit_prop else []
+    satellites_by_plane = {}
+    for node_id in node_ids:
+        if node_id.startswith('sat_'):
+            plane = get_plane_from_id(node_id)
+            if plane not in satellites_by_plane:
+                satellites_by_plane[plane] = node_id
+    
+    # Plot ground tracks for one satellite per plane
+    for plane, sat_id in satellites_by_plane.items():
+        plane_color = plane_colors[plane % len(plane_colors)]
+        
+        lats = []
+        lons = []
+        
+        for t in time_points:
+            pos = orbit_prop.get_positions(t)[sat_id]
+            lat, lon = ecef_to_latlon(pos)
+            lats.append(lat)
+            lons.append(lon)
+        
+        if lats and lons:
+            lons = np.array(lons)
+            lats = np.array(lats)
+            
+            # Unwrap longitude to avoid jumps
+            lons_unwrapped = np.unwrap(np.radians(lons))
+            lons_unwrapped = np.degrees(lons_unwrapped)
+            
+            # Plot orbital path (ground track) - subtle but visible
+            if use_cartopy:
+                ax.plot(lons_unwrapped, lats, color=plane_color, linewidth=1.0, alpha=0.4, 
+                       transform=ccrs.PlateCarree(), zorder=2,
+                       label=f'Plane {plane} Orbit' if plane == 0 else '')
+            else:
+                x_track = lons_unwrapped * np.cos(np.radians(lats))
+                y_track = lats
+                ax.plot(x_track, y_track, color=plane_color, linewidth=1.0, alpha=0.4, 
+                       zorder=2, label=f'Plane {plane} Orbit' if plane == 0 else '')
     
     # Plot current satellite positions with labels (like reference image)
     node_latlon = {}
