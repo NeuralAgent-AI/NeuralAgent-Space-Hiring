@@ -551,7 +551,12 @@ def plot_sinusoidal_2d_routing(positions, topology, orbit_prop, packet_path=None
                 satellites_by_plane[plane] = node_id
     
     # Plot ground tracks for one satellite per plane
-    for plane, sat_id in satellites_by_plane.items():
+    # Show labels for first few planes to demonstrate multiple planes
+    planes_plotted = set()
+    # Store unwrapping reference for each plane to ensure all satellites in same plane align
+    plane_unwrap_ref = {}  # {plane: (lons_array, lons_unwrapped_array)} for reference
+    
+    for plane, sat_id in sorted(satellites_by_plane.items()):
         plane_color = plane_colors[plane % len(plane_colors)]
         
         lats = []
@@ -571,21 +576,57 @@ def plot_sinusoidal_2d_routing(positions, topology, orbit_prop, packet_path=None
             lons_unwrapped = np.unwrap(np.radians(lons))
             lons_unwrapped = np.degrees(lons_unwrapped)
             
+            # Store unwrapping reference for this plane
+            # This will be used to unwrap coordinates for all satellites in the same plane
+            plane_unwrap_ref[plane] = (lons.copy(), lons_unwrapped.copy())
+            
+            # Add label for first few planes (to show multiple planes without cluttering legend)
+            # For 10 planes, show labels for planes 0, 1, 2, 3, 4 to demonstrate variety
+            show_label = plane < min(5, num_planes) and plane not in planes_plotted
+            if show_label:
+                planes_plotted.add(plane)
+            
             # Plot orbital path (ground track) - subtle but visible
             if use_cartopy:
                 ax.plot(lons_unwrapped, lats, color=plane_color, linewidth=1.0, alpha=0.4, 
                        transform=ccrs.PlateCarree(), zorder=2,
-                       label=f'Plane {plane} Orbit' if plane == 0 else '')
+                       label=f'Plane {plane} Orbit' if show_label else '')
             else:
                 x_track = lons_unwrapped * np.cos(np.radians(lats))
                 y_track = lats
                 ax.plot(x_track, y_track, color=plane_color, linewidth=1.0, alpha=0.4, 
-                       zorder=2, label=f'Plane {plane} Orbit' if plane == 0 else '')
+                       zorder=2, label=f'Plane {plane} Orbit' if show_label else '')
     
     # Plot current satellite positions with labels (like reference image)
+    # For all satellites, apply the same unwrapping as their plane's track to ensure alignment
+    # All satellites in the same plane follow the same ground track, so they should all align
     node_latlon = {}
     for node_id, pos in positions.items():
         lat, lon = ecef_to_latlon(pos)
+        
+        # Apply unwrapping if this satellite's plane has a track
+        # This ensures all satellites in the same plane align with their plane's ground track
+        if node_id.startswith('sat_'):
+            plane = get_plane_from_id(node_id)
+            if plane in plane_unwrap_ref:
+                # Use the unwrapping from the track to ensure alignment
+                # The track's unwrapping determines how longitudes are unwrapped for the entire plane
+                ref_lons, ref_lons_unwrapped = plane_unwrap_ref[plane]
+                
+                # Find the closest point in the track's longitude array to determine unwrapping
+                # This ensures consistent unwrapping across all satellites in the same plane
+                lon_diff = ref_lons - lon
+                # Handle wrap-around: find minimum angular difference
+                lon_diff = np.mod(lon_diff + 180, 360) - 180
+                closest_idx = np.argmin(np.abs(lon_diff))
+                
+                # Calculate unwrapping offset at the closest point
+                unwrap_offset = ref_lons_unwrapped[closest_idx] - ref_lons[closest_idx]
+                
+                # Apply same unwrapping offset to this satellite's longitude
+                # This ensures it aligns with the track line
+                lon = lon + unwrap_offset
+        
         node_latlon[node_id] = (lat, lon)
         
         if node_id.startswith('sat_'):

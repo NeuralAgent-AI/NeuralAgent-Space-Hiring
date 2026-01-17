@@ -99,8 +99,8 @@ ground_station:
 #   Total: 64 satellites
 #
 # Extra large constellation:
-#   number_of_planes: 10
-#   sats_per_plane: 10
+#   number_of_planes: 4
+#   sats_per_plane: 4
 #   Total: 100 satellites
 #
 # ============================================================================

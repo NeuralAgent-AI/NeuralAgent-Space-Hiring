@@ -91,6 +91,37 @@ The following visualization shows a **10×10 constellation (100 satellites)** on
 
 The constellation architecture directly impacts routing performance - larger constellations (10×10) provide more connectivity options, especially in disrupted scenarios, while smaller constellations (4×4) may have network partitions under stress.
 
+#### Routing Visualization Example: 4×4 Constellation
+
+The following visualization shows a **4×4 constellation (16 satellites)** with routing paths on a sinusoidal world map projection. This demonstrates how routing works across different constellation scales:
+
+![Routing Sinusoidal 2D](outputs/plots/routing_sinusoidal_2d.png)
+
+**Key Elements in the Routing Visualization:**
+
+1. **Satellites (Colored Circles)**: Each satellite is labeled and color-coded by orbital plane
+   - Magenta/Pink = Plane 0
+   - Purple = Plane 1
+   - Other colors = Additional planes
+
+2. **Orbital Paths (Colored Lines)**: Subtle ground tracks showing the sinusoidal orbital paths for one satellite from each plane over ~90 minutes
+
+3. **Ground Station (Yellow Triangle)**: The source of all traffic, located at the equator
+
+4. **Routing Path (Red Line)**: Shows the multi-hop path from ground station to destination satellite
+   - Each segment represents one hop in the routing path
+   - The path demonstrates how packets traverse the network using available links
+
+5. **World Map Background**: Open-source map showing continents and oceans for geographical context
+
+This visualization helps you understand:
+- How routing paths are selected across the constellation
+- How different constellation sizes affect routing complexity
+- The relationship between satellite positions and routing hops
+- How the same visualization can be generated for different constellation scales (4×4, 6×6, 8×8, 10×10, etc.)
+
+When you test different constellation sizes for the scaling analysis, you can generate similar visualizations to compare how routing paths change with network size.
+
 ## Setup
 
 ### Requirements
